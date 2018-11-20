@@ -281,11 +281,13 @@ abstract class AbstractClient
             $info = stream_get_meta_data($this->stream);
 
             if (isset($info["timed_out"]) && $info["timed_out"]) {
+	            $this->stream = null;
                 throw new ClientException("Timeout reached while reading from stream.");
             }
         }
 
         if (@feof($this->stream)) {
+	        $this->stream = null;
             throw new ClientException("Broken pipe or closed connection.");
         }
 
@@ -299,10 +301,12 @@ abstract class AbstractClient
     protected function write()
     {
         if (($written = @fwrite($this->getStream(), $this->writeBuffer->read($this->writeBuffer->getLength()))) === false) {
+            $this->stream = null;
             throw new ClientException("Could not write data to socket.");
         }
 
         if ($written === 0) {
+            $this->stream = null;
             throw new ClientException("Broken pipe or closed connection.");
         }
 
